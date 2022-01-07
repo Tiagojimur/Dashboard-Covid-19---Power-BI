@@ -1,0 +1,2031 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Tiagojimur/Dashboard-Covid-19---Power-BI/blob/main/Deep_Learning%20~Clasificaci%C3%B3n%20de%20im%C3%A1genes%20ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "KX8zKrS-hRJk",
+        "nbgrader": {
+          "grade": false,
+          "locked": false,
+          "solution": false
+        }
+      },
+      "source": [
+        "# Práctica: Los Juegos del Hambre"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "XysGzsSAmBvu"
+      },
+      "source": [
+        "ESTUDIANTE: `ESCRIBE TU NOMBRE AQUI`"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "vanYztAMhRJt",
+        "nbgrader": {
+          "grade": false,
+          "locked": false,
+          "solution": false
+        }
+      },
+      "source": [
+        "<table><tr>\n",
+        "    <td><img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/breakfast.jpg\" style=\"width:300px;height:300px;\"></td>\n",
+        "    <td><img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/hamburger.jpg\" style=\"width:300px;height:300px;\"></td>\n",
+        "    <td><img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/fruits.jpg\" style=\"width:300px;height:300px;\"></td>\n",
+        "</tr></table>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "6E7BW750hRJu",
+        "nbgrader": {
+          "grade": false,
+          "locked": false,
+          "solution": false
+        }
+      },
+      "source": [
+        "En esta práctica vamos a enfrentarnos a un problema desafiante de clasificación de imágenes, construyendo una red neuronal profunda que sea capaz de clasificar entre diferentes tipos de comida. ¡Que comiencen los Juegos del Hambre!"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Mnn_FAm8hRJv",
+        "nbgrader": {
+          "grade": false,
+          "locked": false,
+          "solution": false
+        }
+      },
+      "source": [
+        "## Guidelines"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "gspUM6n3hRJw"
+      },
+      "source": [
+        "A lo largo del notebook encontrarás celdas que debes rellenar con tu propio código. Sigue las instrucciones del notebook y presta atención a los siguientes iconos:\n",
+        "\n",
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "Deberás resolver el ejercicio escribiendo tu propio código o respuesta en la celda inmediatamente inferior.</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "sZHQpQXrhRJw"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/exclamation.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "<font color=#2655ad>\n",
+        "Esto es una pista u observación de utilidad que puede ayudarte a resolver el ejercicio. Presta atención a estas pistas para comprender el ejercicio en mayor profundidad.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "xghhJf_HhRJx"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/pro.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "<font color=#259b4c>\n",
+        "Este es un ejercicio avanzado que te puede ayudar a profundizar en el tema, y a conseguir una calificación más alto. ¡Buena suerte!</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "NWAbqrofhRJy"
+      },
+      "source": [
+        "Para evitar problemas con imports o incompatibilidades se recomienda ejecutar este notebook en uno de los [entornos de Deep Learning recomendados](https://github.com/albarji/teaching-environments-deeplearning), o hacer uso [Google Colaboratory](https://colab.research.google.com/). Si usas Colaboratory, asegúrate de [conectar una GPU](https://colab.research.google.com/notebooks/gpu.ipynb), y de haber [deactivado otras sesiones que tuvieras activas](https://stackoverflow.com/a/53441194/2436578)."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "mZmf8R9DhRJy"
+      },
+      "source": [
+        "El siguiente código mostrará todas las gráficas en el propio notebook en lugar de generar una nueva ventana."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "DxmdgWqNhRJz"
+      },
+      "outputs": [],
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "%matplotlib inline"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "9UgDu1WUhRJ0"
+      },
+      "source": [
+        "Finalmente, si necesitas ayuda en el uso de cualquier función Python, coloca el cursor sobre su nombre y presiona Shift+Tab. Aparecerá una ventana con su documentación. Esto solo funciona dentro de celdas de código.\n",
+        "\n",
+        "¡Vamos alla!"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "K733uf0ghRJ2"
+      },
+      "source": [
+        "## Obtención de datos"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "5ZYPquwFhRJ2"
+      },
+      "source": [
+        "Vamos a usar un dataset de imágenes de comida disponible en [Kaggle](https://www.kaggle.com/trolukovich/food11-image-dataset). Para descargarlo, necesitarás crear una cuenta de usuario en Kaggle, y obtener tus credenciales de la API. Puedes hacerlo siguiendo las instrucciones de [esta sección](https://github.com/Kaggle/kaggle-api#api-credentials). Una vez tengas el fichero JSON con tus credenciales, puedes declararlas en este notebook asignando las variables de entorno adecuadas, de la siguiente manera\n",
+        "\n",
+        "    import os\n",
+        "\n",
+        "    os.environ[\"KAGGLE_USERNAME\"] = \"YOUR KAGGLE USERNAME HERE\"\n",
+        "    os.environ[\"KAGGLE_KEY\"] = \"YOUR KAGGLE KEY HERE\"\n",
+        "    \n",
+        "Cuando lo hayas hecho, podrás descargar el dataset a la máquina donde esté corriendo este notebook usando el siguiente comando\n",
+        "\n",
+        "    !kaggle datasets download trolukovich/food11-image-dataset --unzip -p YOUR_LOCAL_FOLDER\n",
+        "    \n",
+        "donde debes indicar el nombre de un directorio válido como \"YOUR_LOCAL_FOLDER\". Si prefieres descargar los datos en la misma carpeta que este notebook, puedes quitar la parte `-p YOUR_LOCAL_FOLDER` del comando."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "VRX8BQsZhRJ2"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "Crea tu propia cuenta de Kaggle (si no tienes ya una), obtén tus credenciales, y usa la celda inferior para declarar tu nombre de usuario de Kaggle y tu clave como variables de entorno. A continuación, usa la misma celda para descargar el dataset de imágenes.\n",
+        "    \n",
+        "¡Ojo! Debes mantener estas credenciales en secreto, ya que son personales a tu usuario de Kaggle. Recuerda borrarlas de la celda antes de entregar este notebook.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "wiFYSULfhRJ3"
+      },
+      "outputs": [],
+      "source": [
+        "import os\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!kaggle datasets download trolukovich/food11-image-dataset --unzip "
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "RvSpvPYctiBp",
+        "outputId": "ab3db1ea-fcd2-45bb-920e-96d4dc5d9e1b"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Downloading food11-image-dataset.zip to /content\n",
+            "100% 1.08G/1.08G [00:06<00:00, 174MB/s]\n",
+            "100% 1.08G/1.08G [00:06<00:00, 175MB/s]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Xmh27gIEhRJ4"
+      },
+      "source": [
+        "Revisa ahora la carpeta en la que has descargado los datos. Verás que contiene 3 subdirectorios:\n",
+        "\n",
+        "* **training**, contiene las imágenes a utilizar para entrenar el modelo.\n",
+        "* **validation**, contiene imágenes adicionales que podrías usar como datos de entrenamiento adicionales, o para algún tipo de estrategia de validación como Early Stopping.\n",
+        "* **evaluation**, contiene las imágenes que debes utilizar para testear el modelo. Las imágenes de esta carpeta **solo** pueden utilizarse para medir el rendimiento del modelo tras su entrenamiento, y para nada más.\n",
+        "\n",
+        "Además de esto, dentro de cada una de estas carpetas encontrarás una subcarpeta para cada una de las 11 clases de comida:\n",
+        "\n",
+        "* Bread (panes)\n",
+        "* Dairy product (lácteos)\n",
+        "* Dessert (postres)\n",
+        "* Egg (huevos)\n",
+        "* Fried food (fritos)\n",
+        "* Meat (carnes)\n",
+        "* Noodles-Pasta (pasta)\n",
+        "* Rice (arroz)\n",
+        "* Seafood (pescado y marisco)\n",
+        "* Soup (sopas)\n",
+        "* Vegetable-Fruit (vegetales y frutas)\n",
+        "\n",
+        "Esta es una forma estándar de organizar los datasets de imágenes: una carpeta para cada clase. Para facilitar los pasos de procesamiento que vendrán a continuación, vamos a definir algunas variables que nos indiquen dónde están almacenados los diferentes conjuntos de datos."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "MJrE8F8zhRJ4"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "    Crea variables <b>TRAINDIR</b>, <b>VALDIR</b> y <b>TESTDIR</b>, cada una conteniendo una cadena de texto con la ruta al directorio donde están los datos de entrenamiento, validación y evaluación, respectivamente.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "TzK2VI3ShRJ5"
+      },
+      "outputs": [],
+      "source": [
+        "TRAINDIR = \"/content/training\"\n",
+        "VALDIR = \"/content/validation\"\n",
+        "TESTDIR = \"/content/evaluation\""
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ikYtQyR-hRJ6"
+      },
+      "source": [
+        "### Reducción de clases"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "AWsLot-7hRJ6"
+      },
+      "source": [
+        "Con el fin de hacer este problema más accesible de cara a la práctica, vamos a centrarnos solo en seis de las clases de comida disponibles: `Bread`, `Dairy product`, `Dessert`, `Egg`, `Fried food` y `Meat`. Para ello, se provee el código siguiente, que elimina de los datos descargados las carpetas correspondientes a imágenes de las otras clases."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TXoNw1-thRJ7",
+        "outputId": "f0c8525a-ebed-4fb8-9d19-e06d81e1d5d3"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Deleting /content/training/Noodles-Pasta...\n",
+            "Deleting /content/training/Soup...\n",
+            "Deleting /content/training/Seafood...\n",
+            "Deleting /content/training/Rice...\n",
+            "Deleting /content/training/Vegetable-Fruit...\n",
+            "Deleting /content/validation/Noodles-Pasta...\n",
+            "Deleting /content/validation/Soup...\n",
+            "Deleting /content/validation/Seafood...\n",
+            "Deleting /content/validation/Rice...\n",
+            "Deleting /content/validation/Vegetable-Fruit...\n",
+            "Deleting /content/evaluation/Noodles-Pasta...\n",
+            "Deleting /content/evaluation/Soup...\n",
+            "Deleting /content/evaluation/Seafood...\n",
+            "Deleting /content/evaluation/Rice...\n",
+            "Deleting /content/evaluation/Vegetable-Fruit...\n"
+          ]
+        }
+      ],
+      "source": [
+        "from glob import glob\n",
+        "import os\n",
+        "\n",
+        "valid_classes = {\"Bread\", \"Dairy product\", \"Dessert\", \"Egg\", \"Fried food\", \"Meat\"}\n",
+        "datasets = {TRAINDIR, VALDIR, TESTDIR}\n",
+        "\n",
+        "for dataset in datasets:\n",
+        "    for classdir in glob(f\"{dataset}/*\"):  # Find subfolders with classes\n",
+        "        if classdir.split(\"/\")[-1] not in valid_classes:  # Ignore those in valid_classes\n",
+        "            print(f\"Deleting {classdir}...\")\n",
+        "            for fname in glob(f\"{classdir}/*.jpg\"):  # Remove each image file\n",
+        "                os.remove(fname)\n",
+        "            os.rmdir(classdir)  # Remove folder"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "fncCfOYihRJ7"
+      },
+      "source": [
+        "## Procesando imágenes desde ficheros"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "6wTWrPr-hRJ7"
+      },
+      "source": [
+        "Este dataset de imágenes es grande, con imágenes de mayor resolución que las que hemos utilizado en el tutorial del MNIST, y cada una de ellas teniendo diferentes tamaños y relación de aspecto. Además, mientras que para el MNIST teníamos una función de keras que preparaba los datos para nosotros, en esta ocasión tendremos que realizar el trabajo de carga y procesamiento de las imágenes.\n",
+        "\n",
+        "Una forma conveniente de hacer todo este trabajo es a través de la función Keras `image_dataset_from_directory`. Esta función crea un objeto `Dataset` de TensorFlow con todas las imágenes de un directorio, cargándolas en memoria de forma dinámica solo cuando la red neuronal necesita utilizarlas. Esta función también nos permite especificar algunas opciones de preprocesamiento muy útiles.\n",
+        "\n",
+        "Por ejemplo, podemos crear un `Dataset` con los datos en la carpeta de training:"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "-edpP7-NhRJ8",
+        "outputId": "d2f39a0a-c609-4a12-9a7c-e3ce4d232b40"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 6082 files belonging to 6 classes.\n"
+          ]
+        }
+      ],
+      "source": [
+        "from tensorflow.keras.preprocessing import image_dataset_from_directory\n",
+        "\n",
+        "image_size = 32\n",
+        "batch_size = 64\n",
+        "\n",
+        "train_dataset = image_dataset_from_directory(\n",
+        "    TRAINDIR, \n",
+        "    image_size = (image_size, image_size),\n",
+        "    batch_size = batch_size, \n",
+        "    label_mode = 'categorical'\n",
+        ")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dGEdEuF5hRJ8"
+      },
+      "source": [
+        "Observa los parámetros que se han utilizado para configurar el dataset:\n",
+        "\n",
+        "* El **directorio** desde el que cargar las imágenes.\n",
+        "* Un **tamaño de imagen (image_size)** que se utilizará para redimensionar todas las imágenes cargadas a ese tamaño común, en este caso 32x32 píxeles.\n",
+        "* El **tamaños de los lotes (batch_size)** de imágenes a ser generados. Nótese que definimos aquí este parametro en lugar de en el paso `fit` de la red, como hemos hecho en otros ejercicios, porque el objeto `Dataset` resultante hará uso de esta información para mantener en memoria solo algunos batches de imágenes, ahorrando así memoria.\n",
+        "* El **modo de etiquetado (label_mode)**, esto es, la codificación de las etiquetas a utilizar. `categorical` significa que utilizaremos la ya conocida codificación one-hot."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "jgeGjQDVhRJ9"
+      },
+      "source": [
+        "Un objeto `Dataset` funciona de manera muy similar a un generador de Python, lo que significa que podemos iterar sobre él para obtener batches de imágenes ya preprocesadas. Por ejemplo, el siguiente código inicia un bucle para extraer todos los batches del `Dataset`, nos muestra el contenido el primero, y detiene la iteración."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "bPAIrHu7hRJ9",
+        "outputId": "c1a4b471-3b37-4dc4-96e3-d83da920c8d6"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Shape of input batch: (64, 32, 32, 3)\n",
+            "Shape of output batch: (64, 6)\n",
+            "Input batch:\n",
+            "[[[[4.25000000e+01 4.45000000e+01 2.30000000e+01]\n",
+            "   [4.22500000e+01 4.40000000e+01 2.35000000e+01]\n",
+            "   [3.85000000e+01 4.25000000e+01 2.42500000e+01]\n",
+            "   ...\n",
+            "   [6.50000000e+00 9.50000000e+00 5.00000000e-01]\n",
+            "   [6.00000000e+00 9.00000000e+00 0.00000000e+00]\n",
+            "   [2.00000000e+00 4.75000000e+00 0.00000000e+00]]\n",
+            "\n",
+            "  [[2.37500000e+01 2.62500000e+01 1.42500000e+01]\n",
+            "   [2.95000000e+01 3.10000000e+01 1.75000000e+01]\n",
+            "   [3.07500000e+01 3.22500000e+01 1.87500000e+01]\n",
+            "   ...\n",
+            "   [9.75000000e+00 1.07500000e+01 2.75000000e+00]\n",
+            "   [5.50000000e+00 1.15000000e+01 1.50000000e+00]\n",
+            "   [3.75000000e+00 9.75000000e+00 2.50000000e-01]]\n",
+            "\n",
+            "  [[4.45000000e+01 4.55000000e+01 2.75000000e+01]\n",
+            "   [4.57500000e+01 4.67500000e+01 2.97500000e+01]\n",
+            "   [4.37500000e+01 4.57500000e+01 2.47500000e+01]\n",
+            "   ...\n",
+            "   [1.27500000e+01 1.37500000e+01 5.75000000e+00]\n",
+            "   [1.20000000e+01 1.30000000e+01 5.00000000e+00]\n",
+            "   [1.12500000e+01 1.37500000e+01 1.75000000e+00]]\n",
+            "\n",
+            "  ...\n",
+            "\n",
+            "  [[1.47500000e+02 1.48000000e+02 1.15000000e+02]\n",
+            "   [1.51500000e+02 1.52500000e+02 1.21500000e+02]\n",
+            "   [1.54750000e+02 1.52250000e+02 1.22750000e+02]\n",
+            "   ...\n",
+            "   [1.13250000e+02 1.03250000e+02 6.72500000e+01]\n",
+            "   [1.07250000e+02 9.72500000e+01 6.12500000e+01]\n",
+            "   [1.02000000e+02 9.20000000e+01 5.70000000e+01]]\n",
+            "\n",
+            "  [[1.45750000e+02 1.45750000e+02 1.10750000e+02]\n",
+            "   [1.46750000e+02 1.46750000e+02 1.11750000e+02]\n",
+            "   [1.45250000e+02 1.44250000e+02 1.13250000e+02]\n",
+            "   ...\n",
+            "   [1.15500000e+02 1.02500000e+02 6.75000000e+01]\n",
+            "   [1.04750000e+02 9.17500000e+01 5.67500000e+01]\n",
+            "   [9.25000000e+01 8.35000000e+01 5.05000000e+01]]\n",
+            "\n",
+            "  [[1.39500000e+02 1.38500000e+02 1.00500000e+02]\n",
+            "   [1.41500000e+02 1.42000000e+02 1.03000000e+02]\n",
+            "   [1.42500000e+02 1.42500000e+02 1.06500000e+02]\n",
+            "   ...\n",
+            "   [1.06500000e+02 9.27500000e+01 5.75000000e+01]\n",
+            "   [9.10000000e+01 8.40000000e+01 4.90000000e+01]\n",
+            "   [6.87500000e+01 6.52500000e+01 3.35000000e+01]]]\n",
+            "\n",
+            "\n",
+            " [[[2.21000000e+02 2.09750000e+02 1.76000000e+02]\n",
+            "   [1.61500000e+02 9.62500000e+01 6.42500000e+01]\n",
+            "   [1.60250000e+02 8.82500000e+01 6.42500000e+01]\n",
+            "   ...\n",
+            "   [1.82000000e+02 1.31500000e+02 9.95000000e+01]\n",
+            "   [1.84000000e+02 1.34250000e+02 1.01250000e+02]\n",
+            "   [1.82250000e+02 1.31250000e+02 8.22500000e+01]]\n",
+            "\n",
+            "  [[2.26250000e+02 2.36250000e+02 2.11000000e+02]\n",
+            "   [2.23750000e+02 2.32500000e+02 2.08250000e+02]\n",
+            "   [2.10250000e+02 1.75500000e+02 1.62250000e+02]\n",
+            "   ...\n",
+            "   [1.76750000e+02 1.28250000e+02 8.65000000e+01]\n",
+            "   [1.74250000e+02 1.26250000e+02 8.72500000e+01]\n",
+            "   [1.78750000e+02 1.32750000e+02 9.87500000e+01]]\n",
+            "\n",
+            "  [[1.55250000e+02 8.85000000e+01 5.70000000e+01]\n",
+            "   [1.54500000e+02 8.87500000e+01 7.40000000e+01]\n",
+            "   [2.26000000e+02 2.18000000e+02 2.03250000e+02]\n",
+            "   ...\n",
+            "   [1.70000000e+02 1.26000000e+02 8.90000000e+01]\n",
+            "   [1.74500000e+02 1.23750000e+02 8.15000000e+01]\n",
+            "   [1.77000000e+02 1.32500000e+02 8.35000000e+01]]\n",
+            "\n",
+            "  ...\n",
+            "\n",
+            "  [[1.21500000e+02 6.30000000e+01 6.02500000e+01]\n",
+            "   [1.23250000e+02 6.30000000e+01 6.25000000e+01]\n",
+            "   [1.06750000e+02 5.47500000e+01 6.12500000e+01]\n",
+            "   ...\n",
+            "   [2.24750000e+02 2.25000000e+02 2.11250000e+02]\n",
+            "   [2.26000000e+02 2.30000000e+02 2.13000000e+02]\n",
+            "   [2.23750000e+02 2.29000000e+02 2.14250000e+02]]\n",
+            "\n",
+            "  [[1.21500000e+02 6.35000000e+01 6.20000000e+01]\n",
+            "   [1.21750000e+02 6.07500000e+01 6.22500000e+01]\n",
+            "   [1.21000000e+02 6.10000000e+01 6.25000000e+01]\n",
+            "   ...\n",
+            "   [2.24000000e+02 2.28000000e+02 2.10750000e+02]\n",
+            "   [1.89250000e+02 1.59750000e+02 1.42750000e+02]\n",
+            "   [2.28000000e+02 1.98000000e+02 1.83500000e+02]]\n",
+            "\n",
+            "  [[1.01250000e+02 6.05000000e+01 6.42500000e+01]\n",
+            "   [1.20500000e+02 6.37500000e+01 6.60000000e+01]\n",
+            "   [1.17500000e+02 6.10000000e+01 6.67500000e+01]\n",
+            "   ...\n",
+            "   [2.32250000e+02 2.17750000e+02 1.96750000e+02]\n",
+            "   [1.64500000e+02 1.28250000e+02 1.27500000e+02]\n",
+            "   [1.64500000e+02 1.17500000e+02 8.90000000e+01]]]\n",
+            "\n",
+            "\n",
+            " [[[4.00000000e+00 6.00000000e+00 4.00000000e+00]\n",
+            "   [3.00000000e+00 4.00000000e+00 2.50000000e+00]\n",
+            "   [4.25000000e+00 6.25000000e+00 5.25000000e+00]\n",
+            "   ...\n",
+            "   [1.75000000e+00 5.75000000e+00 6.75000000e+00]\n",
+            "   [2.75000000e+00 6.75000000e+00 7.75000000e+00]\n",
+            "   [7.00000000e+00 8.00000000e+00 1.10000000e+01]]\n",
+            "\n",
+            "  [[4.00000000e+00 6.00000000e+00 4.00000000e+00]\n",
+            "   [5.50000000e+00 5.50000000e+00 3.50000000e+00]\n",
+            "   [2.50000000e+00 3.50000000e+00 1.00000000e+00]\n",
+            "   ...\n",
+            "   [1.75000000e+00 5.50000000e+00 6.50000000e+00]\n",
+            "   [1.50000000e+00 5.25000000e+00 6.25000000e+00]\n",
+            "   [7.50000000e-01 4.75000000e+00 5.75000000e+00]]\n",
+            "\n",
+            "  [[6.75000000e+00 8.75000000e+00 7.75000000e+00]\n",
+            "   [5.00000000e-01 1.75000000e+00 7.50000000e-01]\n",
+            "   [2.25000000e+00 4.25000000e+00 3.25000000e+00]\n",
+            "   ...\n",
+            "   [7.50000000e-01 4.25000000e+00 5.25000000e+00]\n",
+            "   [2.00000000e+00 3.00000000e+00 5.00000000e+00]\n",
+            "   [1.50000000e+00 5.50000000e+00 6.50000000e+00]]\n",
+            "\n",
+            "  ...\n",
+            "\n",
+            "  [[2.32500000e+01 1.92500000e+01 1.02500000e+01]\n",
+            "   [2.35000000e+01 1.65000000e+01 6.50000000e+00]\n",
+            "   [2.90000000e+01 2.10000000e+01 1.00000000e+01]\n",
+            "   ...\n",
+            "   [1.77250000e+02 1.36500000e+02 8.52500000e+01]\n",
+            "   [1.50500000e+02 1.05750000e+02 5.10000000e+01]\n",
+            "   [1.63000000e+02 1.00000000e+02 4.00000000e+01]]\n",
+            "\n",
+            "  [[1.77500000e+01 1.37500000e+01 4.75000000e+00]\n",
+            "   [2.40000000e+01 2.00000000e+01 1.10000000e+01]\n",
+            "   [2.12500000e+01 1.42500000e+01 6.25000000e+00]\n",
+            "   ...\n",
+            "   [1.55000000e+02 1.08500000e+02 5.65000000e+01]\n",
+            "   [1.26250000e+02 7.82500000e+01 3.82500000e+01]\n",
+            "   [1.62750000e+02 1.01250000e+02 4.52500000e+01]]\n",
+            "\n",
+            "  [[3.50000000e+01 2.60000000e+01 1.70000000e+01]\n",
+            "   [2.92500000e+01 2.02500000e+01 1.32500000e+01]\n",
+            "   [2.42500000e+01 1.52500000e+01 8.25000000e+00]\n",
+            "   ...\n",
+            "   [2.07000000e+02 1.44500000e+02 6.42500000e+01]\n",
+            "   [1.94250000e+02 1.31250000e+02 6.02500000e+01]\n",
+            "   [1.92500000e+02 1.26500000e+02 5.25000000e+01]]]\n",
+            "\n",
+            "\n",
+            " ...\n",
+            "\n",
+            "\n",
+            " [[[4.35000000e+01 6.10000000e+01 8.67500000e+01]\n",
+            "   [4.25000000e+01 4.35000000e+01 5.55000000e+01]\n",
+            "   [4.42500000e+01 3.77500000e+01 4.32500000e+01]\n",
+            "   ...\n",
+            "   [1.27500000e+01 1.55000000e+01 3.62500000e+01]\n",
+            "   [1.71750000e+02 1.94250000e+02 2.12500000e+02]\n",
+            "   [1.62750000e+02 1.86500000e+02 2.26750000e+02]]\n",
+            "\n",
+            "  [[1.80000000e+01 3.75000000e+01 6.12500000e+01]\n",
+            "   [3.15000000e+01 3.85000000e+01 5.70000000e+01]\n",
+            "   [5.60000000e+01 5.20000000e+01 5.32500000e+01]\n",
+            "   ...\n",
+            "   [2.67500000e+01 2.47500000e+01 3.80000000e+01]\n",
+            "   [1.92500000e+01 2.02500000e+01 3.17500000e+01]\n",
+            "   [5.10000000e+01 6.12500000e+01 1.20000000e+02]]\n",
+            "\n",
+            "  [[4.15000000e+01 5.92500000e+01 9.05000000e+01]\n",
+            "   [4.77500000e+01 5.07500000e+01 7.47500000e+01]\n",
+            "   [7.25000000e+01 6.45000000e+01 5.85000000e+01]\n",
+            "   ...\n",
+            "   [4.32500000e+01 3.02500000e+01 4.75000000e+01]\n",
+            "   [4.75000000e+01 3.70000000e+01 6.37500000e+01]\n",
+            "   [4.72500000e+01 5.12500000e+01 9.87500000e+01]]\n",
+            "\n",
+            "  ...\n",
+            "\n",
+            "  [[5.10000000e+01 2.22500000e+01 2.50000000e+00]\n",
+            "   [8.02500000e+01 4.85000000e+01 2.20000000e+01]\n",
+            "   [8.95000000e+01 4.57500000e+01 1.60000000e+01]\n",
+            "   ...\n",
+            "   [6.62500000e+01 4.80000000e+01 6.20000000e+01]\n",
+            "   [5.80000000e+01 4.40000000e+01 5.90000000e+01]\n",
+            "   [6.27500000e+01 4.52500000e+01 6.12500000e+01]]\n",
+            "\n",
+            "  [[8.00000000e+01 4.35000000e+01 1.30000000e+01]\n",
+            "   [8.00000000e+01 3.75000000e+01 6.25000000e+00]\n",
+            "   [8.10000000e+01 4.62500000e+01 1.90000000e+01]\n",
+            "   ...\n",
+            "   [3.97500000e+01 3.77500000e+01 6.07500000e+01]\n",
+            "   [3.85000000e+01 3.95000000e+01 6.02500000e+01]\n",
+            "   [2.97500000e+01 2.42500000e+01 4.42500000e+01]]\n",
+            "\n",
+            "  [[6.85000000e+01 3.62500000e+01 8.50000000e+00]\n",
+            "   [8.40000000e+01 3.90000000e+01 9.50000000e+00]\n",
+            "   [7.25000000e+01 4.42500000e+01 1.57500000e+01]\n",
+            "   ...\n",
+            "   [4.27500000e+01 4.32500000e+01 7.22500000e+01]\n",
+            "   [4.75000000e+01 5.00000000e+01 7.95000000e+01]\n",
+            "   [5.20000000e+01 5.02500000e+01 7.55000000e+01]]]\n",
+            "\n",
+            "\n",
+            " [[[2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   [2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   [2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   ...\n",
+            "   [2.20250000e+02 2.21000000e+02 2.27500000e+02]\n",
+            "   [2.50250000e+02 2.54250000e+02 2.46250000e+02]\n",
+            "   [2.49000000e+02 2.54500000e+02 2.47500000e+02]]\n",
+            "\n",
+            "  [[2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   [2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   [2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   ...\n",
+            "   [1.85500000e+02 1.83500000e+02 2.15000000e+02]\n",
+            "   [1.89250000e+02 1.84250000e+02 2.13500000e+02]\n",
+            "   [1.89750000e+02 1.81250000e+02 2.01750000e+02]]\n",
+            "\n",
+            "  [[2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   [2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   [2.50000000e+02 2.55000000e+02 2.46000000e+02]\n",
+            "   ...\n",
+            "   [1.11500000e+02 1.05750000e+02 1.28500000e+02]\n",
+            "   [1.06000000e+02 9.65000000e+01 1.15500000e+02]\n",
+            "   [1.48000000e+02 1.07500000e+02 1.16000000e+02]]\n",
+            "\n",
+            "  ...\n",
+            "\n",
+            "  [[2.47750000e+02 2.54000000e+02 2.45750000e+02]\n",
+            "   [2.35250000e+02 2.39250000e+02 2.42250000e+02]\n",
+            "   [2.48750000e+02 2.53750000e+02 2.47750000e+02]\n",
+            "   ...\n",
+            "   [1.66250000e+02 1.68250000e+02 1.80250000e+02]\n",
+            "   [1.69750000e+02 1.69750000e+02 1.81750000e+02]\n",
+            "   [1.75500000e+02 1.74500000e+02 1.80250000e+02]]\n",
+            "\n",
+            "  [[2.26750000e+02 2.28750000e+02 2.41000000e+02]\n",
+            "   [2.42000000e+02 2.45000000e+02 2.52000000e+02]\n",
+            "   [2.37000000e+02 2.46500000e+02 2.50000000e+02]\n",
+            "   ...\n",
+            "   [1.40250000e+02 1.42250000e+02 1.54000000e+02]\n",
+            "   [1.42250000e+02 1.46750000e+02 1.63250000e+02]\n",
+            "   [1.61000000e+02 1.60000000e+02 1.72000000e+02]]\n",
+            "\n",
+            "  [[2.40500000e+02 2.43500000e+02 2.50000000e+02]\n",
+            "   [2.34500000e+02 2.38500000e+02 2.49500000e+02]\n",
+            "   [2.23250000e+02 2.28500000e+02 2.39750000e+02]\n",
+            "   ...\n",
+            "   [1.20250000e+02 1.23250000e+02 1.35250000e+02]\n",
+            "   [1.43000000e+02 1.42500000e+02 1.53250000e+02]\n",
+            "   [1.32000000e+02 1.32000000e+02 1.44000000e+02]]]\n",
+            "\n",
+            "\n",
+            " [[[1.43890625e+02 7.39687500e+01 1.16796875e+01]\n",
+            "   [1.59593750e+02 8.70937500e+01 1.10625000e+01]\n",
+            "   [1.91718750e+02 1.28218750e+02 2.57187500e+01]\n",
+            "   ...\n",
+            "   [1.21054688e+02 6.20000000e+01 5.10937500e+00]\n",
+            "   [1.47132812e+02 9.76328125e+01 2.41328125e+01]\n",
+            "   [1.55210938e+02 1.09210938e+02 3.23437500e+01]]\n",
+            "\n",
+            "  [[1.96687500e+02 1.51398438e+02 5.14531250e+01]\n",
+            "   [2.21000000e+02 1.83898438e+02 7.57656250e+01]\n",
+            "   [2.30398438e+02 1.98117188e+02 7.96718750e+01]\n",
+            "   ...\n",
+            "   [1.51445312e+02 1.11445312e+02 3.24453125e+01]\n",
+            "   [1.50164062e+02 1.13164062e+02 3.96640625e+01]\n",
+            "   [1.49289062e+02 1.05789062e+02 2.92890625e+01]]\n",
+            "\n",
+            "  [[2.17539062e+02 1.80906250e+02 7.50625000e+01]\n",
+            "   [2.27257812e+02 2.08757812e+02 1.05789062e+02]\n",
+            "   [2.32835938e+02 2.14671875e+02 1.04726562e+02]\n",
+            "   ...\n",
+            "   [1.35945312e+02 8.19453125e+01 1.34453125e+01]\n",
+            "   [1.34734375e+02 8.16015625e+01 1.51328125e+01]\n",
+            "   [1.38156250e+02 9.39453125e+01 2.30000000e+01]]\n",
+            "\n",
+            "  ...\n",
+            "\n",
+            "  [[2.02078125e+02 2.03656250e+02 1.96367188e+02]\n",
+            "   [2.07500000e+02 2.07500000e+02 1.99500000e+02]\n",
+            "   [2.07828125e+02 2.08828125e+02 2.03828125e+02]\n",
+            "   ...\n",
+            "   [1.68398438e+02 1.37234375e+02 9.21250000e+01]\n",
+            "   [1.83804688e+02 1.74304688e+02 1.69140625e+02]\n",
+            "   [1.82500000e+02 1.80500000e+02 1.83500000e+02]]\n",
+            "\n",
+            "  [[2.30343750e+02 2.34921875e+02 2.37921875e+02]\n",
+            "   [2.24031250e+02 2.25164062e+02 2.26765625e+02]\n",
+            "   [2.10117188e+02 2.11007812e+02 2.09562500e+02]\n",
+            "   ...\n",
+            "   [1.49023438e+02 1.30976562e+02 1.15484375e+02]\n",
+            "   [1.88734375e+02 1.88734375e+02 1.93734375e+02]\n",
+            "   [2.10156250e+02 2.15656250e+02 2.24156250e+02]]\n",
+            "\n",
+            "  [[2.32921875e+02 2.36921875e+02 2.37921875e+02]\n",
+            "   [2.29632812e+02 2.34632812e+02 2.35132812e+02]\n",
+            "   [2.25445312e+02 2.31226562e+02 2.31335938e+02]\n",
+            "   ...\n",
+            "   [1.91281250e+02 1.89281250e+02 1.92171875e+02]\n",
+            "   [2.06367188e+02 2.13367188e+02 2.19367188e+02]\n",
+            "   [2.14000000e+02 2.22000000e+02 2.30500000e+02]]]]\n",
+            "Output batch:\n",
+            "[[0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 1. 0. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 1. 0. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 1. 0. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 1. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 0. 0. 0. 1.]\n",
+            " [0. 0. 0. 0. 1. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [0. 1. 0. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]\n",
+            " [0. 0. 1. 0. 0. 0.]\n",
+            " [1. 0. 0. 0. 0. 0.]]\n"
+          ]
+        }
+      ],
+      "source": [
+        "for X_batch, y_batch in train_dataset:\n",
+        "    print(f\"Shape of input batch: {X_batch.shape}\")\n",
+        "    print(f\"Shape of output batch: {y_batch.shape}\")\n",
+        "    print(f\"Input batch:\\n{X_batch}\")\n",
+        "    print(f\"Output batch:\\n{y_batch}\")\n",
+        "    break"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "K2UaPCEthRJ-"
+      },
+      "source": [
+        "Podemos ver que, efectivamente, el generador produce un tensor de datos de entrada de las dimensiones apropiadas para poder introducirlo en la red neuronal, y que las salidas también se han codificado correctamente como one-hot.\n",
+        "No obstante, todavía hay un problema con los datos: los valores de los píxeles están en el rango [0, 255], lo cual puede producir problemas de entrenamiento. Resolveremos este punto después, en la definición de la red neuronal, mediante una capa especial. Por ahora vamos a cotinuar, definiendo una función que construya los `Dataset` para los datos de entrenamiento, validación y test."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "jTQyBbf-hRJ-"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "    Crea una función <b>create_datasets</b> que reciba los siguiente parámetros:\n",
+        "    <ul>\n",
+        "      <li><b>traindir</b>: el directorio donde están localizadas las imágenes de entrenamiento.</li>\n",
+        "      <li><b>valdir</b>: el directorio donde están localizadas las imágenes de validación.</li>\n",
+        "      <li><b>testdir</b>: el directorio donde están localizadas las imágenes de test.</li>\n",
+        "      <li><b>image_size</b>: el tamaño que se utilizará para redimensionar todas las imágenes a una resolución común.</li>\n",
+        "      <li><b>batch_size</b>: el tamaño de los batches de imágenes que serán generados.</li>\n",
+        "    </ul>\n",
+        "    La función debe crear objetos `Dataset` para los directorios de entrenamiento, validación y test, y devolver los tres datasets creados como\n",
+        "\n",
+        "    return train_dataset, val_dataset, test_dataset\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "D-wm19eJhRJ-"
+      },
+      "outputs": [],
+      "source": [
+        "def create_datasets(traindir,valdir,testdir,image_size,batch_size):\n",
+        "  \n",
+        "  train_dataset = image_dataset_from_directory(\n",
+        "    traindir, \n",
+        "    image_size = (image_size, image_size),\n",
+        "    batch_size = batch_size, \n",
+        "    label_mode = 'categorical'\n",
+        ")\n",
+        "  test_dataset = image_dataset_from_directory(\n",
+        "    testdir, \n",
+        "    image_size = (image_size, image_size),\n",
+        "    batch_size = batch_size, \n",
+        "    label_mode = 'categorical'\n",
+        ")\n",
+        "  val_dataset = image_dataset_from_directory(\n",
+        "    valdir, \n",
+        "    image_size = (image_size, image_size),\n",
+        "    batch_size = batch_size, \n",
+        "    label_mode = 'categorical'\n",
+        ")\n",
+        "  return train_dataset,test_dataset,val_dataset,\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "5wGaULQsjwJz"
+      },
+      "source": [
+        "Probemos que la función que has implementado funciona correctamente"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "JtZlNbHhiOIR",
+        "outputId": "9337c7d9-e8ed-4e9b-e4a4-a68ebefa220c"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 6082 files belonging to 6 classes.\n",
+            "Found 2070 files belonging to 6 classes.\n",
+            "Found 2108 files belonging to 6 classes.\n"
+          ]
+        }
+      ],
+      "source": [
+        "import tensorflow as tf\n",
+        "\n",
+        "train_dataset, val_dataset, test_dataset = create_datasets(TRAINDIR, VALDIR, TESTDIR, image_size=32, batch_size=32)\n",
+        "\n",
+        "# Test whether all returned objects are valid Tensorflow datasets\n",
+        "assert isinstance(train_dataset, tf.data.Dataset)\n",
+        "assert isinstance(val_dataset, tf.data.Dataset)\n",
+        "assert isinstance(test_dataset, tf.data.Dataset)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "LLIo6LBfhRJ-"
+      },
+      "source": [
+        "¡Ahora que tenemos nuestros `Dataset` podemos entrenar una red profunda con ellos! Como ejemplo, vamos a construir una red convolucional extremadamente simple. Nótese cómo hemos añadido una capa especial de preprocesado llamada `Rescaling`, que será la encargada de normalizar los valores de los píxeles al rango [0, 1] cada vez que la red reciba una imagen.\n",
+        "\n",
+        "¡Ojo! Esta red tan simple no producirá errores al ejecutar, pero tiene algunos fallos de diseño que deberás corregir cuando crees tu propia red, más adelante en esta práctica."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "gbwmYJiLhRJ_"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.models import Sequential\n",
+        "from tensorflow.keras.layers import Dense, Activation, Flatten, Dropout, Convolution2D, Rescaling, MaxPooling2D\n",
+        "\n",
+        "model = Sequential()\n",
+        "model.add(Rescaling(scale=1./255, input_shape=(image_size, image_size, 3)))\n",
+        "model.add(Convolution2D(4, 3, activation='linear'))\n",
+        "model.add(Flatten())\n",
+        "model.add(Dense(6, activation='sigmoid'))\n",
+        "\n",
+        "model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=[\"accuracy\"])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4v9OxA-AhRJ_"
+      },
+      "source": [
+        "El método `fit` de un modelo Keras puede recibir un objeto `Dataset` como datos de entrenamiento, en lugar de un par de tensores (entradas, salidas). Como al construir los `Dataset` ya especificamos el tamaño de batch, no es necesario indicarlo ahora."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_ZXjs6CghRKA",
+        "outputId": "7d0985b2-c640-4da2-f0fa-32698a8fef9f"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "191/191 [==============================] - 20s 53ms/step - loss: 1.6422 - accuracy: 0.3165\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.callbacks.History at 0x7fbe24a2c910>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 11
+        }
+      ],
+      "source": [
+        "model.fit(train_dataset, epochs=1)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "T_ux64pchRKA"
+      },
+      "source": [
+        "Análogamente, podemos evaluar el rendimiento de nuestro modelo sobre el `Dataset` de test de la siguiente manera"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Q_kQhkY-hRKA",
+        "outputId": "50801b06-8d46-4e57-ab60-8b440b79e943"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "65/65 [==============================] - 4s 60ms/step - loss: 1.5882 - accuracy: 0.3319\n",
+            "Loss 1.59, accuracy 33.2%\n"
+          ]
+        }
+      ],
+      "source": [
+        "loss, acc = model.evaluate(test_dataset)\n",
+        "print(f\"Loss {loss:.3}, accuracy {acc:.1%}\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "AlXf9OBehRKB"
+      },
+      "source": [
+        "Este nivel de acierto puede parecer pobre, pero ten en cuenta que hemos usado un modelo muy simple y que el problema es de 6 clases. ¿Serás capaz de hacerlo mejor?"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "1kZnaNQIhRKB"
+      },
+      "source": [
+        "## Construyendo tu propia red"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "uNd8dC2whRKB"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "    Diseña una red neuronal profunda que obtenga el mejor acierto posible sobre los datos de test. Puedes usar los datos de entrenamiento y validación como te parezca mejor, pero <b>sólo</b> puedes usar los datos de test para evaluar el acierto de tu modelo. Debes obtener una red capaz de alcanzar al menos un 40% de acierto sobre los datos de test.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "s9C9GNYihRKC"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/exclamation.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "<font color=#2655ad>\n",
+        "    \n",
+        "Algunas recomendaciones y estrategias que pueden ayudar a mejorar tu diseño de red:\n",
+        "\n",
+        "    \n",
+        "- Usa todos los trucos que has aprendido en los ejercicios anteriores: capas convolucionales + pooling, activaciones ReLU, dropout... asegúrate también de utilizar un buen optimizador, con una función de error (loss) adecuada, así como una función de activación en la capa de salida que sea adecuada para esta clase de problema (clasificación multiclase).\n",
+        "- Empieza por redes pequeñas, con un número pequeño de parámetros, de forma que puedas comprobar rápidamente qué tal funcionan. Después, puedes hacer tu red más grande en tres direcciones: mayor tamaño de imágenes de entrada, más capas, y más kernels por capa convolucional o unidades por capa densa. Si aumentas el tamaño de las imágenes de entrada, asegúrate de añadir también más capas Convolution+Pooling, para que así a la capa Flatten solo lleguen imágenes muy pequeñas (10x10 píxeles o menos).\n",
+        "- Configurar los `Dataset` para que carguen imágenes de mayor tamaño puede mejorar significativamente el rendimiento de tu red. Pero ten cuidado, ¡también puedes encontrarte errores de falta de memoria (CUDA memory error) si cargas imágenes a un tamaño demasiado grande! Para esta práctica, un tamaño mayor a 256 puede ser demasiado grande...\n",
+        "- Si observas grandes diferencias de loss entre los datos de entrenamiento y validación o test, prueba a incrementar el nivel de Dropout en las capas Dense.\n",
+        "- ¡Usa los datos de validación! Por ejemplo, usa una <a href=\"https://keras.io/api/callbacks/early_stopping/\">**estrategia de EarlyStopping**</a> para monitorizar el loss de los datos de validación, y así detener el entrenamiento cuando tras un número de épocas esa loss no haya decrecido. Configurar la EarlyStopping para restaurar los mejores parámetros encontrados durante la optimización también puede resultarte útil.\n",
+        "- Si tu red obtiene resultados muy buenos, del orden del 90% o más de acierto en test... sospecha. Es posible que estés mezclando los datos de entrenamiento y test.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ssDs0SGghRKC"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/pro.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "<font color=#259b4c>\n",
+        "    \n",
+        "Como ejercicio avanzado, añade las siguiente estrategias a tu red:\n",
+        "\n",
+        "- Usa **técnicas de \"image augmentation\"** para aumentar artificialmente tu dataset de entrenamiento. Para ello, explora las <a href=\"https://keras.io/api/layers/preprocessing_layers/image_augmentation/\">capas de augmentation disponibles en Keras</a>.\n",
+        "- Usa capas de <a href=\"https://keras.io/api/layers/normalization_layers/batch_normalization/\">BatchNormalization</a> para facilitar el entrenamiento de la red.\n",
+        "    \n",
+        "Usando estos trucos y los mencionados en el punto anterior, es posible obtener más de un 60% de acierto en el conjunto de test.\n",
+        "\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Vamos a construir una red neuronal que inckluya capas de Batch Normalization y varias capas de Maxpooling y Convolution2D. Se eliminaron las capas de image augmentation que se habian incluido al principio debido a que reducian la preción del modelo."
+      ],
+      "metadata": {
+        "id": "Orn-Q_2ctEUz"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from tensorflow.keras.layers import BatchNormalization\n",
+        "from tensorflow.keras.callbacks import EarlyStopping\n",
+        "\n",
+        "train_dataset, val_dataset, test_dataset = create_datasets(TRAINDIR, VALDIR, TESTDIR, image_size=64, batch_size=32)\n",
+        "model = Sequential()\n",
+        "model.add(Rescaling(scale=1./255, input_shape=(64, 64, 3)))\n",
+        "model.add(Convolution2D(128, kernel_size=(3,3), activation='relu'))\n",
+        "model.add(MaxPooling2D((2, 2)))\n",
+        "model.add(Convolution2D(256, kernel_size=(3,3), activation='relu'))\n",
+        "model.add(MaxPooling2D((2, 2)))\n",
+        "model.add(Dense(128, activation='relu'))\n",
+        "model.add(BatchNormalization())\n",
+        "model.add(Dropout(0.7))\n",
+        "model.add(Dense(256, activation='relu'))\n",
+        "model.add(Dropout(0.7))\n",
+        "model.add(Flatten())\n",
+        "model.add(Dense(6, activation='sigmoid'))\n",
+        "\n",
+        "model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[\"accuracy\"])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "7m70NcMsRtMb",
+        "outputId": "3552cb20-fcde-401a-c2bc-5e7226df919c"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 6082 files belonging to 6 classes.\n",
+            "Found 2070 files belonging to 6 classes.\n",
+            "Found 2108 files belonging to 6 classes.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.fit(train_dataset, epochs=11, validation_data=val_dataset,callbacks=[EarlyStopping(patience=5,restore_best_weights=True)])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "sp_JXBY_RuCa",
+        "outputId": "aff7f5b1-4831-498e-8491-85c38db845c9"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/11\n",
+            "191/191 [==============================] - 18s 87ms/step - loss: 1.6896 - accuracy: 0.3093 - val_loss: 1.7791 - val_accuracy: 0.1679\n",
+            "Epoch 2/11\n",
+            "191/191 [==============================] - 17s 87ms/step - loss: 1.5193 - accuracy: 0.3675 - val_loss: 1.7611 - val_accuracy: 0.1717\n",
+            "Epoch 3/11\n",
+            "191/191 [==============================] - 17s 85ms/step - loss: 1.4810 - accuracy: 0.3961 - val_loss: 1.6630 - val_accuracy: 0.2813\n",
+            "Epoch 4/11\n",
+            "191/191 [==============================] - 16s 83ms/step - loss: 1.4582 - accuracy: 0.4064 - val_loss: 1.6417 - val_accuracy: 0.3548\n",
+            "Epoch 5/11\n",
+            "191/191 [==============================] - 16s 82ms/step - loss: 1.4481 - accuracy: 0.4115 - val_loss: 1.4686 - val_accuracy: 0.4122\n",
+            "Epoch 6/11\n",
+            "191/191 [==============================] - 16s 81ms/step - loss: 1.4162 - accuracy: 0.4308 - val_loss: 1.6221 - val_accuracy: 0.3762\n",
+            "Epoch 7/11\n",
+            "191/191 [==============================] - 17s 85ms/step - loss: 1.4155 - accuracy: 0.4339 - val_loss: 1.6061 - val_accuracy: 0.3435\n",
+            "Epoch 8/11\n",
+            "191/191 [==============================] - 16s 82ms/step - loss: 1.3635 - accuracy: 0.4507 - val_loss: 1.5904 - val_accuracy: 0.3477\n",
+            "Epoch 9/11\n",
+            "191/191 [==============================] - 16s 83ms/step - loss: 1.3602 - accuracy: 0.4594 - val_loss: 2.7515 - val_accuracy: 0.3269\n",
+            "Epoch 10/11\n",
+            "191/191 [==============================] - 16s 83ms/step - loss: 1.3557 - accuracy: 0.4630 - val_loss: 1.4551 - val_accuracy: 0.4061\n",
+            "Epoch 11/11\n",
+            "191/191 [==============================] - 16s 83ms/step - loss: 1.3365 - accuracy: 0.4744 - val_loss: 1.4645 - val_accuracy: 0.4464\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.callbacks.History at 0x7fbd33776a10>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 67
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "loss, acc = model.evaluate(test_dataset)\n",
+        "print(f\"Loss {loss:.3}, accuracy {acc:.1%}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ou4nUu1cUvLM",
+        "outputId": "7e98a44b-d14b-4bf0-bac1-7abaced50620"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "65/65 [==============================] - 4s 56ms/step - loss: 1.4428 - accuracy: 0.4643\n",
+            "Loss 1.44, accuracy 46.4%\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "HrLe9mFwhRKC"
+      },
+      "source": [
+        "## Transfer learning"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "7a5xs6_RhRKC"
+      },
+      "source": [
+        "Aunque diseñar nuestra propia red puede producir algunos resultados aceptables, suele ser mejor aprovechar el conocimiento ya existente en una red pre-entrenada. Esto no solo nos lleva a resultados mejores, sino que además nos ahorra mucho tiempo de diseño de la red. Para ello, el módulo [Keras Applications](https://keras.io/api/applications/) contiene varios diseños de redes listos para su uso. Por ejemplo, para hacer uso de la famosa red VGG16 hacemos lo siguiente"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "fTLIqMTAhRKD",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "0b80de23-679a-4f24-88fb-1c6b67ca0eef"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Downloading data from https://storage.googleapis.com/tensorflow/keras-applications/vgg16/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5\n",
+            "58892288/58889256 [==============================] - 1s 0us/step\n",
+            "58900480/58889256 [==============================] - 1s 0us/step\n"
+          ]
+        }
+      ],
+      "source": [
+        "from tensorflow.keras.applications import VGG16\n",
+        "image_size=64\n",
+        "vgg16_model = VGG16(include_top=False, input_shape=(image_size, image_size, 3))"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "_ZUvx4zdhRKD"
+      },
+      "source": [
+        "Por defecto, todas las redes de Keras Applications están precargadas con los pesos que se obtuvieron al entrenar la red sobre el dataset de la competición de [ImageNet](http://www.image-net.org/). Para adaptar la red a nuestro problema, hemos necesitado especificar la resolución de nuestras imágenes (`input_shape`), así como eliminar las capas de salida (`top`) de la red original, dado que nosotros tendremos un número diferente de clases.\n",
+        "\n",
+        "Ahora, ¿cómo hacemos para transferir el aprendizaje de esta red? Vamos a ver cómo implementar la estrategia de \"bottleneck features\". En primer lugar, marcamos el modelo VGG16 como no entrenable, para que sus parámetros se mantengan congelados."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "iWsuQg0phRKD"
+      },
+      "outputs": [],
+      "source": [
+        "vgg16_model.trainable = False"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ljtS1PhRhRKE"
+      },
+      "source": [
+        "Hecho esto, vamos a construir una red neuronal que incluya la VGG16 como una de sus \"capas\". Es necesario tener en cuenta que la red VGG16 se entrenó realizando una normalización muy específica de las imágenes de entrenamiento, y nosotros debemos seguir ese mismo proceso para que la red se comporte correctamente. Convenientemente, Keras también nos da una funcionalidad para replicar la normalización que la VGG16 necesita."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "ZjFpoNRIhRKE"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.applications.vgg16 import preprocess_input"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dTBk5uRChRKF"
+      },
+      "source": [
+        "Podemos probar esta normalización con alguna de las imágenes de nuestro dataset"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "V6ukW26shRKF",
+        "outputId": "5aa550d6-a16a-4923-d99f-beb358d7f953"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Before normalizing: [[[207.25 181.75 179.25]\n",
+            "  [205.75 180.   178.  ]\n",
+            "  [205.5  181.25 184.5 ]]\n",
+            "\n",
+            " [[204.5  179.5  175.  ]\n",
+            "  [197.75 173.5  162.5 ]\n",
+            "  [188.   164.5  155.5 ]]\n",
+            "\n",
+            " [[180.   152.25 133.5 ]\n",
+            "  [170.   142.5  121.  ]\n",
+            "  [168.   142.   117.  ]]]\n",
+            "After normalizing: [[[75.311    64.971    83.57    ]\n",
+            "  [74.061    63.221    82.07    ]\n",
+            "  [80.561    64.471    81.82    ]]\n",
+            "\n",
+            " [[71.061    62.721    80.82    ]\n",
+            "  [58.560997 56.721    74.07    ]\n",
+            "  [51.560997 47.721    64.32    ]]\n",
+            "\n",
+            " [[29.560997 35.471    56.32    ]\n",
+            "  [17.060997 25.721    46.32    ]\n",
+            "  [13.060997 25.221    44.32    ]]]\n"
+          ]
+        }
+      ],
+      "source": [
+        "for X_batch, _ in train_dataset:\n",
+        "    break\n",
+        "    \n",
+        "print(f\"Before normalizing: {X_batch[0, :3, :3, :]}\")\n",
+        "print(f\"After normalizing: {preprocess_input(X_batch)[0, :3, :3, :]}\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "sx3EQeEThRKF"
+      },
+      "source": [
+        "La normalización realizada por la VGG16 consiste en invertir el orden de los canales de color (RGB -> BGR), y restar los valores medios sobre todo el dataset ImageNet para cada canal de color por separado. Afortunadamente, la función `preprocess_input` que hemos importado hace todo este trabajo por nosotros. Además, podemos incrustar esta función como la primera capa de nuestra red, cumpliendo el papel de la capa `Rescaling` que utilizamos en el apartado anterior. Esto es posible gracias a la capa `Lambda`, que permite construir una capa Keras en base a cualquier función de Tensorflow. De modo que, vamos a comenzar nuestro diseño de red con esta capa."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "DnSoUUrQhRKG"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.layers import Lambda, GlobalAveragePooling2D\n",
+        "\n",
+        "\n",
+        "image_size=64\n",
+        "model = Sequential()\n",
+        "model.add(Lambda(preprocess_input, input_shape=(image_size, image_size, 3)))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "train_dataset, val_dataset, test_dataset = create_datasets(TRAINDIR, VALDIR, TESTDIR, image_size=64, batch_size=32)\n",
+        "\n",
+        "model = Sequential()\n",
+        "model.add(Lambda(preprocess_input, input_shape=(image_size, image_size, 3)))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "9e4a4d2f-de5e-43ed-b0e8-0284811107b6",
+        "id": "CN86GBJJ001O"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 6082 files belonging to 6 classes.\n",
+            "Found 2070 files belonging to 6 classes.\n",
+            "Found 2108 files belonging to 6 classes.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "k83-_MmdhRKG"
+      },
+      "source": [
+        "Tras esto, podemos añadir toda la red VGG16 como si fuera una nueva capa, y nuestras propias capas después de ella. A continuación tenemos un ejemplo de esta clase de diseño, aunque es importante destacar que es un diseño muy sencillo que contiene algunos fallos; una red real para hacer transfer learning debería tener un diseño mejor."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9f0RdEumhRKG",
+        "outputId": "f62a2e5a-c115-4102-c3a9-7abd0b6eeb51"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Model: \"sequential_27\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            " lambda_1 (Lambda)           (None, 64, 64, 3)         0         \n",
+            "                                                                 \n",
+            " vgg16 (Functional)          (None, 2, 2, 512)         14714688  \n",
+            "                                                                 \n",
+            " flatten_24 (Flatten)        (None, 2048)              0         \n",
+            "                                                                 \n",
+            " dense_70 (Dense)            (None, 6)                 12294     \n",
+            "                                                                 \n",
+            "=================================================================\n",
+            "Total params: 14,726,982\n",
+            "Trainable params: 12,294\n",
+            "Non-trainable params: 14,714,688\n",
+            "_________________________________________________________________\n"
+          ]
+        }
+      ],
+      "source": [
+        "model.add(vgg16_model)\n",
+        "model.add(Flatten())\n",
+        "model.add(Dense(6, activation='sigmoid'))\n",
+        "model.summary()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "NueAGF7DhRKG"
+      },
+      "source": [
+        "Observa cómo en el resumen del modelo podemos ver que la red completa tiene millones de parámetros, pero dado que hemos congelado toda la parte de la red perteneciente a la VGG16, solo unos pocos miles de parámetros son entrenables (trainable): aquellos correspondientes a la capa Dense que hemos colocado al final."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "qn7iMKlQhRKH"
+      },
+      "source": [
+        "Ya podemos compilar y entrenar el modelo a la manera habitual."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5eBG6zKwhRKH",
+        "outputId": "ef46bf26-cae2-49e4-b851-184d77d888cc"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "191/191 [==============================] - 14s 62ms/step - loss: 129.8480 - accuracy: 0.4558\n",
+            "65/65 [==============================] - 5s 73ms/step - loss: 492.1897 - accuracy: 0.3425\n",
+            "Loss 4.92e+02, accuracy 34.3%\n"
+          ]
+        }
+      ],
+      "source": [
+        "model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=[\"accuracy\"])\n",
+        "model.fit(train_dataset, epochs=1)\n",
+        "\n",
+        "loss, acc = model.evaluate(test_dataset)\n",
+        "print(f\"Loss {loss:.3}, accuracy {acc:.1%}\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "9Sb7SVSkhRKH"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "    Usando la estrategia \"bottleneck\" presentada, implementa una red que haga transfer learning desde la red VGG16, con un diseño correcto. Si lo haces adecuadamente, esta red debe obtener mejores resultados que con la red que diseñaste en el apartado anterior, y con al menos un 80% de acierto sobre el conjunto de test.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "rm2LQa-mhRKI"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/exclamation.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "<font color=#2655ad>\n",
+        "    \n",
+        "Algunos consejos para mejorar tu diseño de red:\n",
+        "    \n",
+        "- Incluye una o más capas Dense, con sus funciones de activación apropiadas, antes de la capa de salida.\n",
+        "- Intenta usar una capa de tipo [GlobalAveragePooling](https://keras.io/api/layers/pooling_layers/global_average_pooling2d/) en lugar de la capa Flatten. Esta capa calcula una media de todos los valores de píxeles para cada canal, y en algunas ocasiones produce mejores resultados que la capa Flatten.\n",
+        "- ¡Y no olvides todos los consejos del apartado anterior! También aplican aquí.\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "sl6bbHEWhRKI"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/pro.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "<font color=#259b4c>\n",
+        "\n",
+        "Para mejorar aún más los resultados de tu red, utiliza las siguientes ideas:\n",
+        "\n",
+        "- Usa las estrategias PRO del ejercicio anterio.\n",
+        "- Prueba otras redes pre-entrenadas de <a href=\"https://keras.io/api/applications/\">Keras Applications</a>, como ResNet, Xception o EfficientNet.\n",
+        "- Usa una estrategia de transfer learning más avanzada, como fine-tuning o una combinación de bottleneck features y fine-tuning. Revisa las diapositivas de clase para saber cómo.\n",
+        "   \n",
+        "Si empleas todos estos trucos, es posible alcanzar más de un 90% de acierto en el conjunto de test.\n",
+        "\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Vamos a hacer primero la red con VGG16. Esta red está adaptada originalmente para fotos de tamaño 224x224, por lo que usaremos ese tamaño. Además, añadimos una layer Global Average Pooling 2D, que realiza las funciones de un Flatten. Finalmente, devuelve la prediccion en la última capa. Utilizamos los mismos parametros de compile que hemos utilizado en las redes previas\n"
+      ],
+      "metadata": {
+        "id": "9zXCwlJ-P7Vk"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "qLJ8IgANhRKI",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "f10e8b5a-c709-4ec4-a983-416b4321bfd9"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 6082 files belonging to 6 classes.\n",
+            "Found 2070 files belonging to 6 classes.\n",
+            "Found 2108 files belonging to 6 classes.\n",
+            "Model: \"sequential_9\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            " lambda_4 (Lambda)           (None, 224, 224, 3)       0         \n",
+            "                                                                 \n",
+            " vgg16 (Functional)          (None, 7, 7, 512)         14714688  \n",
+            "                                                                 \n",
+            " global_average_pooling2d_3   (None, 512)              0         \n",
+            " (GlobalAveragePooling2D)                                        \n",
+            "                                                                 \n",
+            " dense_10 (Dense)            (None, 128)               65664     \n",
+            "                                                                 \n",
+            " dropout_4 (Dropout)         (None, 128)               0         \n",
+            "                                                                 \n",
+            " dense_11 (Dense)            (None, 256)               33024     \n",
+            "                                                                 \n",
+            " dense_12 (Dense)            (None, 6)                 1542      \n",
+            "                                                                 \n",
+            "=================================================================\n",
+            "Total params: 14,814,918\n",
+            "Trainable params: 100,230\n",
+            "Non-trainable params: 14,714,688\n",
+            "_________________________________________________________________\n"
+          ]
+        }
+      ],
+      "source": [
+        "train_dataset, val_dataset, test_dataset = create_datasets(TRAINDIR, VALDIR, TESTDIR, 224, 64)\n",
+        "\n",
+        "\n",
+        "from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, RandomFlip\n",
+        "from tensorflow.keras.callbacks import EarlyStopping\n",
+        "image_size=224\n",
+        "\n",
+        "vgg16_model = VGG16(include_top=False, input_shape=(image_size, image_size, 3))\n",
+        "vgg16_model.trainable = False\n",
+        "model = Sequential()\n",
+        "model.add(Lambda(preprocess_input, input_shape=(image_size, image_size, 3)))\n",
+        "model.add(vgg16_model)\n",
+        "model.add(GlobalAveragePooling2D())\n",
+        "model.add(Dense(128,activation=\"relu\"))\n",
+        "model.add(Dropout(0.5))\n",
+        "model.add(Dense(256,activation=\"relu\"))\n",
+        "model.add(Dense(6,activation=\"sigmoid\"))\n",
+        "\n",
+        "model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[\"accuracy\"])\n",
+        "model.summary()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.fit(train_dataset, epochs=10, validation_data=val_dataset,callbacks=[EarlyStopping(patience=5,restore_best_weights=True)])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "gb803OyK9jRT",
+        "outputId": "c2b083d8-747b-4b28-a168-491f866e5c05"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/10\n",
+            "96/96 [==============================] - 62s 626ms/step - loss: 1.6875 - accuracy: 0.4679 - val_loss: 0.8256 - val_accuracy: 0.7126\n",
+            "Epoch 2/10\n",
+            "96/96 [==============================] - 61s 625ms/step - loss: 1.0280 - accuracy: 0.6294 - val_loss: 0.7086 - val_accuracy: 0.7464\n",
+            "Epoch 3/10\n",
+            "96/96 [==============================] - 61s 624ms/step - loss: 0.8852 - accuracy: 0.6840 - val_loss: 0.6293 - val_accuracy: 0.7744\n",
+            "Epoch 4/10\n",
+            "96/96 [==============================] - 61s 624ms/step - loss: 0.7952 - accuracy: 0.7118 - val_loss: 0.6050 - val_accuracy: 0.7778\n",
+            "Epoch 5/10\n",
+            "96/96 [==============================] - 61s 623ms/step - loss: 0.7312 - accuracy: 0.7424 - val_loss: 0.6094 - val_accuracy: 0.7923\n",
+            "Epoch 6/10\n",
+            "96/96 [==============================] - 61s 624ms/step - loss: 0.6759 - accuracy: 0.7590 - val_loss: 0.5705 - val_accuracy: 0.8010\n",
+            "Epoch 7/10\n",
+            "96/96 [==============================] - 61s 624ms/step - loss: 0.5876 - accuracy: 0.7884 - val_loss: 0.5361 - val_accuracy: 0.8150\n",
+            "Epoch 8/10\n",
+            "96/96 [==============================] - 61s 623ms/step - loss: 0.5575 - accuracy: 0.7994 - val_loss: 0.5296 - val_accuracy: 0.8155\n",
+            "Epoch 9/10\n",
+            "96/96 [==============================] - 61s 622ms/step - loss: 0.5373 - accuracy: 0.8045 - val_loss: 0.5256 - val_accuracy: 0.8198\n",
+            "Epoch 10/10\n",
+            "96/96 [==============================] - 61s 623ms/step - loss: 0.4925 - accuracy: 0.8231 - val_loss: 0.5159 - val_accuracy: 0.8188\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.callbacks.History at 0x7fd8fd8a8f90>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 28
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "loss, acc = model.evaluate(test_dataset)\n",
+        "print(f\"Loss {loss:.3}, accuracy {acc:.1%}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "W4hWW7JqTP6H",
+        "outputId": "8c8ce6a9-9c39-4471-aa58-67049e0c09be"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "33/33 [==============================] - 32s 934ms/step - loss: 0.5447 - accuracy: 0.8046\n",
+            "Loss 0.545, accuracy 80.5%\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from tensorflow.keras.applications import Xception\n",
+        "train_dataset, val_dataset, test_dataset = create_datasets(TRAINDIR, VALDIR, TESTDIR, 224, 64)\n",
+        "image_size=224\n",
+        "exception_model = Xception(include_top=False, input_shape=(image_size, image_size, 3))\n",
+        "exception_model.trainable = False\n",
+        "model = Sequential()\n",
+        "model.add(Lambda(preprocess_input, input_shape=(image_size, image_size, 3)))\n",
+        "model.add(exception_model)\n",
+        "model.add(GlobalAveragePooling2D())\n",
+        "model.add(Dropout(0.5))\n",
+        "model.add(Dense(128,activation = \"relu\"))\n",
+        "model.add(Dense(6,activation=\"sigmoid\"))\n",
+        "\n",
+        "model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[\"accuracy\"])\n",
+        "model.summary()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "S2mnrWiqvPpb",
+        "outputId": "54eab43e-7bed-4f93-eb73-09c189f9d55c"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 6082 files belonging to 6 classes.\n",
+            "Found 2070 files belonging to 6 classes.\n",
+            "Found 2108 files belonging to 6 classes.\n",
+            "Model: \"sequential_4\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            " lambda_2 (Lambda)           (None, 224, 224, 3)       0         \n",
+            "                                                                 \n",
+            " xception (Functional)       (None, 7, 7, 2048)        20861480  \n",
+            "                                                                 \n",
+            " global_average_pooling2d_1   (None, 2048)             0         \n",
+            " (GlobalAveragePooling2D)                                        \n",
+            "                                                                 \n",
+            " dropout_3 (Dropout)         (None, 2048)              0         \n",
+            "                                                                 \n",
+            " dense_6 (Dense)             (None, 128)               262272    \n",
+            "                                                                 \n",
+            " dense_7 (Dense)             (None, 6)                 774       \n",
+            "                                                                 \n",
+            "=================================================================\n",
+            "Total params: 21,124,526\n",
+            "Trainable params: 263,046\n",
+            "Non-trainable params: 20,861,480\n",
+            "_________________________________________________________________\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.fit(train_dataset, epochs=10, validation_data=val_dataset,callbacks=[EarlyStopping(patience=5,restore_best_weights=True)])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "IJGJfCswwtMw",
+        "outputId": "85aabc0b-61db-43d5-fc35-4a9ea0e1e9ae"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/10\n",
+            "96/96 [==============================] - 97s 855ms/step - loss: 2.3113 - accuracy: 0.2808 - val_loss: 1.6289 - val_accuracy: 0.3546\n",
+            "Epoch 2/10\n",
+            "96/96 [==============================] - 80s 822ms/step - loss: 1.6329 - accuracy: 0.3399 - val_loss: 1.5530 - val_accuracy: 0.3812\n",
+            "Epoch 3/10\n",
+            "96/96 [==============================] - 80s 819ms/step - loss: 1.5807 - accuracy: 0.3547 - val_loss: 1.5170 - val_accuracy: 0.4014\n",
+            "Epoch 4/10\n",
+            "96/96 [==============================] - 80s 820ms/step - loss: 1.5257 - accuracy: 0.3750 - val_loss: 1.4824 - val_accuracy: 0.4019\n",
+            "Epoch 5/10\n",
+            "96/96 [==============================] - 79s 818ms/step - loss: 1.4985 - accuracy: 0.3920 - val_loss: 1.4650 - val_accuracy: 0.4106\n",
+            "Epoch 6/10\n",
+            "96/96 [==============================] - 79s 818ms/step - loss: 1.4809 - accuracy: 0.3990 - val_loss: 1.4449 - val_accuracy: 0.4324\n",
+            "Epoch 7/10\n",
+            "96/96 [==============================] - 80s 823ms/step - loss: 1.4742 - accuracy: 0.4040 - val_loss: 1.4415 - val_accuracy: 0.4242\n",
+            "Epoch 8/10\n",
+            "96/96 [==============================] - 80s 819ms/step - loss: 1.4571 - accuracy: 0.4055 - val_loss: 1.4439 - val_accuracy: 0.4208\n",
+            "Epoch 9/10\n",
+            "96/96 [==============================] - 79s 816ms/step - loss: 1.4551 - accuracy: 0.4110 - val_loss: 1.4185 - val_accuracy: 0.4338\n",
+            "Epoch 10/10\n",
+            "96/96 [==============================] - 79s 814ms/step - loss: 1.4519 - accuracy: 0.4206 - val_loss: 1.4319 - val_accuracy: 0.4290\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.callbacks.History at 0x7f8d7dfc0490>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 19
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "loss, acc = model.evaluate(test_dataset)\n",
+        "print(f\"Loss {loss:.3}, accuracy {acc:.1%}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "xcLLWWlUX8fx",
+        "outputId": "bc0a2333-0049-46b4-cf2c-1e63ba2d465d"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "33/33 [==============================] - 24s 681ms/step - loss: 1.4446 - accuracy: 0.4250\n",
+            "Loss 1.44, accuracy 42.5%\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "fVJc7DMJhRKK"
+      },
+      "source": [
+        "## Informe final y resumen de resultados"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "PV2c2JCKhRKK"
+      },
+      "source": [
+        "<img src=\"https://albarji-labs-materials.s3-eu-west-1.amazonaws.com/question.png\" height=\"80\" width=\"80\" style=\"float: right;\"/>\n",
+        "\n",
+        "***\n",
+        "\n",
+        "<font color=#ad3e26>\n",
+        "Escribe en la siguiente celda un pequeño informe con:\n",
+        "    <ul>\n",
+        "        <li>Una tabla de resultados, indicando qué diseños de red has probado y qué resultados en test has obtenido. Puede usar un estilo de tabla como el que se muestra abajo.</li>\n",
+        "        <li>De las estrategias y diseños que has ido probando, ¿qué ha funcionado y qué no?</li>\n",
+        "        <li>¿Qué has aprendido con esta práctica?\n",
+        "    </ul>\n",
+        "</font>\n",
+        "\n",
+        "***"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "EofHCraehRKL"
+      },
+      "source": [
+        "**TABLA DE RESULTADIOS DE LAS CUATRO REDES NEURONALES TESTEADAS**\n",
+        "\n",
+        "|Procesado de imágenes|Diseño de red neuronal|Estrategia de entrenamiento|Acierto en test|\n",
+        "|---------------------|----------------------|---------------------------|---------------|\n",
+        "|Tamaño 32x32, batch size 16|Convolutional(32) + Flatten + Dense(64)|Entrenamiento desde 0|33.2%|\n",
+        "|Tamaño 64x64, batch size 32|VGG16 + Flatten + Dense(32)|Bottleneck features|34.3%|\n",
+        "|Tamaño 64x64, batch size 32 |Convolutional(128) + MaxPooling2D + Convolutional(256) + MaxPooling2D + Dense(128) + BatchNormalization + Dropout(0.7) + Dense(256) + Dropout(0.7) + Flatten + Dense(6)|Entrenamiento desde 0|46.4%|\n",
+        "|Tamaño 224x224, batch size 64|VGG16 + GlobalAveragePooling2D + Dense(128) + Dropout(0.5) + Dense(256) + Dense(6) |Bottleneck features|80.5%|\n",
+        "|Tamaño 224x224, batch size 64|Xception + GlobalAveragePooling2D + Dense(128) + Dropout(0.5) + Dense(256) + Dense(6) |Bottleneck features|42.5%|\n",
+        "\n",
+        "*¿Qué has aprendido con esta práctica?*\n",
+        "\n",
+        "\n",
+        "Los primeros modelos probados no funcionaron debido a tratarse de redes neuronales muy sencillas. Añadiendo layers se consigui\n",
+        "o mejorar la rpecisión, pero sin superar el 45%. No obstante, al utilizar als redes preentrenadas, en este cado VGG16, se consiguió elevar la precisión al 80%, por lo que se considerá la mejor estrategia a seguir. Podría haberse mejorado la precision aumentando el dataset de entrenamiento con técnicas de data augmentation o modificando los tamaños de las imágenes.\n",
+        "\n",
+        "\n",
+        "Con esta práctica he conseguido comprender mas a fondo la utilidad de las redes neuronales, su funcionamiento y cómo implementar una en un problema concreto. Asi mismo, he conseguido solucionar los problemas que me iban surgiendo utilizando la documentación, lo que ha potenciado mi capacidad resolutiva. \n",
+        "\n",
+        "La importancia de las redes neuronales y el deep learning está aumentando y día a día van saliendo novedades, por lo que es un campo en el que hay que estar muy implicado, practicarlo y conocerlo a fondo para poder desarrollarlo exitosamente en el ámbito laboral."
+      ]
+    }
+  ],
+  "metadata": {
+    "accelerator": "GPU",
+    "anaconda-cloud": {},
+    "colab": {
+      "name": "Deep_Learning_Santiago_Jiménez_final.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.7.5"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
